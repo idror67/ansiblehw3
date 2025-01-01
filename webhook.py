@@ -1,10 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, json
 
 
 app = Flask(__name__)
 
 
-@app.route('/webhook', methods=['POST'])
+@app.route('/webhook', methods=['POST', 'GET'])  
 def webhook():
     webhook_data = request.get_json()
 
