@@ -1,47 +1,23 @@
-from flask import Flask, request, jsonify, Response
-import requests
-import socket
+from flask import Flask, request
+
 
 app = Flask(__name__)
 
-request_count = 0
 
-@app.route('/webhook', methods=['GET'])
-def hello():
-    global request_count
-    request_count += 1 
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    webhook_data = request.get_json()
 
-    # get the hostname and ip from the socket
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
-    public_ip = get_public_ip()
-    public_ip2 = request.headers.get('Host')
-    user_ip = request.remote_addr
-    
-    response = (f'Hello, World!, the number of requests is: {request_count}\n'
-                f'Hostname: {hostname}\n'
-                f'IP Address: {ip_address}\n'
-                f'Public IP Address: {public_ip}\n'
-                f'Public IP Address from request header: {public_ip2}\n'
-                f'User IP Address: {user_ip}\n'
-                )
-    
-    
+    if webhook_data:
+        with open('webhook_data.json', 'w') as f:
+            json.dump(webhook_data, f, indent=4)
+        return 'Webhook received and saved', 200
 
-    return Response(response, mimetype='text/plain')
-
-@app.route('/hello', methods=['GET'])
-def say_hello():
-    return 'Hello, World!'
+    return 'No data', 400
 
 
-def get_public_ip():
-    try:
-        response = requests.get('https://api64.ipify.org?format=json')
-        response.raise_for_status()
-        return response.json()["ip"]
-    except requests.RequestException as e:
-        return f"Error: Unable to determine public IP. {e}"
+
+
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
